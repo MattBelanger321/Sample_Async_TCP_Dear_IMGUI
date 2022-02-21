@@ -30,6 +30,8 @@ add_executable( Demo
                 src/student.cpp
                 src/json_writer.h
                 src/json_writer.cpp
+                src/json_reader.h
+                src/json_reader.cpp
                 bindings/imgui_impl_glfw.cpp
                 bindings/imgui_impl_opengl3.cpp
                 bindings/imgui_impl_glfw.h
