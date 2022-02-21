@@ -194,7 +194,7 @@ int main(){
 
 	while(!glfwWindowShouldClose(window)){	//main app loop
 		glfwPollEvents();		
-		// glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+		glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
 		glClear(GL_COLOR_BUFFER_BIT);	//clears screen buffer (prevents double)
 
 		// feed inputs to dear imgui, start new frame
