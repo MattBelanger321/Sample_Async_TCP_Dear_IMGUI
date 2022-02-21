@@ -18,6 +18,7 @@ glew:shared=False
 [imports]
 bin, *.dll -> ./bin # Copies all dll files from packages bin folder to my local "bin" folder
 lib, *.dylib* -> ./bin # Copies all dylib files from packages lib folder to my local "bin" folder
+., license* -> ../licenses @ folder=True, ignore_case=True
 
 ./res/bindings, imgui_impl_glfw.cpp -> ./bindings
 ./res/bindings, imgui_impl_opengl3.cpp -> ./bindings
