@@ -211,11 +211,13 @@ int main(){
 			std::cout << "Sending..." << "\n";
 			sendTCP(&senderStudent);	//Send Student
 			std::cout << "Sent!" << "\n";
-		}else{
-			sendTCP("\n");
 		}
 
-		std::cout << readTCP() << "\n";
+
+		if (ImGui::Button("Read")){
+			std::cout << readTCP() << "\n";
+		}
+		
 
 
 
