@@ -1,0 +1,25 @@
+[requires]
+imgui/1.78
+glfw/3.3.2
+glew/2.1.0
+asio/1.21.0
+boost/1.78.0
+nlohmann_json/3.10.5
+
+[generators]
+cmake
+cmake_paths
+cmake_find_package
+cmake_find_package_multi
+
+[options]
+glew:shared=False
+
+[imports]
+bin, *.dll -> ./bin # Copies all dll files from packages bin folder to my local "bin" folder
+lib, *.dylib* -> ./bin # Copies all dylib files from packages lib folder to my local "bin" folder
+
+./res/bindings, imgui_impl_glfw.cpp -> ./bindings
+./res/bindings, imgui_impl_opengl3.cpp -> ./bindings
+./res/bindings, imgui_impl_glfw.h -> ./bindings
+./res/bindings, imgui_impl_opengl3.h -> ./bindings
