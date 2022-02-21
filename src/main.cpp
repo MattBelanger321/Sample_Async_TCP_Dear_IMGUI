@@ -23,6 +23,7 @@
 
 #include "student.h"
 #include "json_writer.h"
+#include "json_reader.h"
 
 #include <GL/glew.h> // Initialize with glewInit()
 
@@ -30,12 +31,20 @@
 #include <GLFW/glfw3.h>
 
 #define PI 3.14159265358979323846
-#define IP "192.186.77.202"
-
-using boost::asio::ip::tcp;
+#define PATH "ip.txt"
 
 void toJSON(nlohmann::json* j, const Student* stud){
     *j = nlohmann::json{{"fname", stud->getFirstName()}, {"lname", stud->getLastName()}, {"grade", stud->getGrade()}, {"gpa", stud->getGpa()}};
+}
+
+Student fromJSON(const nlohmann::json json){
+	Student stud;
+	try{
+    	stud =  {json.at("grade"), json.at("gpa"), json.at("fname"), json.at("lname")};
+	}catch(std::exception e){
+		stud = NULL;
+	}
+    return stud;
 }
 
 const std::string jsonStudent(const Student* stud, nlohmann::json* json){
@@ -45,12 +54,44 @@ const std::string jsonStudent(const Student* stud, nlohmann::json* json){
 	return to_string(*json) + "\n";
 }
 
+const char* getIP(std::string* ip){
+	//read file into send message
+	std::string line;
+	
+	std::fstream readFile;
+	readFile.open(PATH, std::fstream::in);
+
+	while(std::getline(readFile,line)){
+		*ip += line;
+	}
+	readFile.close();
+
+	return ip->c_str();
+}
+
+Student readTCP(){
+	JsonReader jr;
+	nlohmann::json json;
+	std::string ip;
+
+	jr.start(getIP(&ip),55555);
+
+	return fromJSON(nlohmann::json::parse(jr.read));
+}
 
 void sendTCP(const Student* stud){
 	JsonWriter jw;
 	nlohmann::json json;
 	
 	jw.message = jsonStudent(stud,&json);
+
+	jw.start(55555);
+}
+
+void sendTCP(const char* message){
+	JsonWriter jw;
+	
+	jw.message = message;
 
 	jw.start(55555);
 }
@@ -141,30 +182,6 @@ bool config(GLFWwindow **window){
 	return true;
 }
 
-
-// void recieve(Student* stud){
-// 	boost::asio::io_context io_context;
-//     boost::system::error_code error;
-//     //create socket
-//     boost::asio::ip::tcp::socket socket(io_context);
-
-//     //connect to server
-//     socket.connect(boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address("192.168.0.46"),55555));
-
-// 	// Construct a timer without setting an expiry time.
-// 	boost::asio::deadline_timer timer(io_context);
-
-// 	// Set an expiry time relative to now.
-// 	timer.expires_from_now(boost::posix_time::seconds(5));
-
-//     //read from server
-//     boost::asio::streambuf recieve_buffer;
-//     boost::asio::async_read(socket, recieve_buffer, boost::asio::transfer_all(), error);
-
-//     std::string out = boost::asio::buffer_cast<const char *>(recieve_buffer.data());
-//     io_context.run();
-// }
-
 int main(){
 	GLFWwindow *window;
 
@@ -194,7 +211,11 @@ int main(){
 			std::cout << "Sending..." << "\n";
 			sendTCP(&senderStudent);	//Send Student
 			std::cout << "Sent!" << "\n";
+		}else{
+			sendTCP("\n");
 		}
+
+		std::cout << readTCP() << "\n";
 
 
 
