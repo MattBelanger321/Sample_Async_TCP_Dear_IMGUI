@@ -76,6 +76,7 @@ Student readTCP(){
 
 	jr.start(getIP(&ip),55555);
 
+	jr.close();
 	return fromJSON(nlohmann::json::parse(jr.read));
 }
 
@@ -86,6 +87,8 @@ void sendTCP(const Student* stud){
 	jw.message = jsonStudent(stud,&json);
 
 	jw.start(55555);
+
+	jw.close();
 }
 
 void sendTCP(const char* message){
@@ -94,6 +97,8 @@ void sendTCP(const char* message){
 	jw.message = message;
 
 	jw.start(55555);
+
+	jw.close();
 }
 
 
