@@ -48,6 +48,10 @@ void JsonWriter::write_handler(const boost::system::error_code& error, std::size
     }
 }
 
+void JsonWriter::close(){
+    socket.close();
+}
+
 void JsonWriter::start(const unsigned short PORT){
     tcp::endpoint ep{tcp::v4(), PORT};
     acceptor.open(ep.protocol());

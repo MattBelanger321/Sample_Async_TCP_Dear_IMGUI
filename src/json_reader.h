@@ -23,6 +23,7 @@ public:
     void read_handler(const boost::system::error_code& error, std::size_t bytes_transferred);
 
     void start(const std::string IPADDR, const unsigned short PORT);
+    void close();
 };
 
 #endif

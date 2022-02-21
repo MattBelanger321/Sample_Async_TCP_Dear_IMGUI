@@ -21,6 +21,7 @@ public:
     void accept_handler(const boost::system::error_code& error);
     void write_handler(const boost::system::error_code& error, std::size_t bytes_transferred);
     void start(const unsigned short PORT);
+    void close();
 };
 
 #endif

@@ -33,3 +33,7 @@ void JsonReader::start(const std::string IPADDR, const unsigned short PORT){
 
     io_context.run();
 }
+
+void JsonReader::close(){
+    socket.close();
+}
