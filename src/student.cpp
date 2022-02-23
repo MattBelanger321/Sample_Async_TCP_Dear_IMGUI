@@ -35,5 +35,5 @@ void Student::setLastName(const std::string lname){
 }
 
 std::ostream& operator << (std::ostream &o, const Student stud){
-    return o << stud.getFirstName() + ", " + stud.getLastName() + ", " + std::to_string(stud.getGrade()) + ", " +std::to_string(stud.getGpa()) << std::setprecision(2);
+    return o << stud.getFirstName() + ", " + stud.getLastName() + ", " + std::to_string(stud.getGrade()) + ", " +std::to_string(stud.getGpa());
 }

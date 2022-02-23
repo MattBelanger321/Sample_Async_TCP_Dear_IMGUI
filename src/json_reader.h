@@ -10,20 +10,23 @@
 
 using namespace boost::asio;
 
-
+//Serves as the server
 class JsonReader{
 private:
-    io_context io_context;
     boost::system::error_code error;
-    //create socket
-    ip::tcp::socket socket{io_context};
+
+    boost::asio::io_context io_context;
+    ip::tcp::acceptor acceptor{io_context};
+	ip::tcp::socket socket {io_context};
 
 public:
     std::string read;
-    void connect_handler(const boost::system::error_code& error);
+    void accept_handler(const boost::system::error_code& error);
+    void wait_handler(const boost::system::error_code& error);
     void read_handler(const boost::system::error_code& error, std::size_t bytes_transferred);
 
-    void start(const std::string IPADDR, const unsigned short PORT);
+    void start(const unsigned short PORT);
+    void read_line();
     void close();
 };
 

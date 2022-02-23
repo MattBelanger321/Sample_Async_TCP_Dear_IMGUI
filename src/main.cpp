@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <cstring>
+#include <thread>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -10,9 +11,6 @@
 #include <imgui.h>
 #include "../build/bindings/imgui_impl_glfw.h"
 #include "../build/bindings/imgui_impl_opengl3.h"
-#include "opengl_shader.h"
-#include "file_manager.h"
-
 #include <boost/asio/io_context.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -32,6 +30,9 @@
 
 #define PI 3.14159265358979323846
 #define PATH "ip.txt"
+
+std::string message;	//content sent from client to server to be printed on UI
+std::mutex message_mutex;	//protect message
 
 void toJSON(nlohmann::json* j, const Student* stud){
     *j = nlohmann::json{{"fname", stud->getFirstName()}, {"lname", stud->getLastName()}, {"grade", stud->getGrade()}, {"gpa", stud->getGpa()}};
@@ -72,9 +73,8 @@ const char* getIP(std::string* ip){
 Student readTCP(){
 	JsonReader jr;
 	nlohmann::json json;
-	std::string ip;
 
-	jr.start(getIP(&ip),55555);
+	jr.start(55555);
 
 	jr.close();
 	return fromJSON(nlohmann::json::parse(jr.read));
@@ -83,20 +83,22 @@ Student readTCP(){
 void sendTCP(const Student* stud){
 	JsonWriter jw;
 	nlohmann::json json;
+	std::string ip;
 	
 	jw.message = jsonStudent(stud,&json);
 
-	jw.start(55555);
+	jw.start(getIP(&ip), 55555);
 
 	jw.close();
 }
 
 void sendTCP(const char* message){
 	JsonWriter jw;
-	
+	std::string ip;
+
 	jw.message = message;
 
-	jw.start(55555);
+	jw.start(getIP(&ip),55555);
 
 	jw.close();
 }
@@ -132,6 +134,10 @@ void getStudent(Student* stud){
 	
 }
 
+void saveStudent(const Student* stud){
+	const std::lock_guard<std::mutex> lock(message_mutex);
+	message = stud->getFirstName() + ", " + stud->getLastName() + ", " + std::to_string(stud->getGrade()) + ", " + std::to_string(stud->getGpa());
+}
 
 //Dear IMGUI Initalization
 bool config(GLFWwindow **window){
@@ -157,7 +163,7 @@ bool config(GLFWwindow **window){
 	#endif
 
 	// Create window with graphics context
-	*window = glfwCreateWindow(1280, 720, "JSON Transfer 2.0", NULL, NULL);
+	*window = glfwCreateWindow(1280, 720, "JSON Transfer 3.0", NULL, NULL);
 
 	if (window == NULL)
 		return false;
@@ -187,6 +193,23 @@ bool config(GLFWwindow **window){
 	return true;
 }
 
+void startServer(GLFWwindow **window){
+	JsonReader jr;
+	nlohmann::json json;
+	Student stud;
+
+	jr.start(55555);	//open server on this port
+	stud = fromJSON(nlohmann::json::parse(jr.read));
+	saveStudent(&stud);//this is guarenteed to run after GUI is rendered to screen
+
+	while(!glfwWindowShouldClose(*window)){	//Server should close then window closes
+		jr.read_line();
+		saveStudent(&stud);
+	}
+
+	jr.close();
+}
+
 int main(){
 	GLFWwindow *window;
 
@@ -197,7 +220,10 @@ int main(){
 	Student senderStudent;	//student that will be sent
 	Student recieverStudent;	//student that will be recieved
 
+	std::thread read(startServer, &window);	//run server in background
+
 	while(!glfwWindowShouldClose(window)){	//main app loop
+		
 		glfwPollEvents();		
 		glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
 		glClear(GL_COLOR_BUFFER_BIT);	//clears screen buffer (prevents double)
@@ -218,13 +244,9 @@ int main(){
 			std::cout << "Sent!" << "\n";
 		}
 
-
-		if (ImGui::Button("Read")){
-			std::cout << readTCP() << "\n";
-		}
-		
-
-
+		message_mutex.lock();
+		ImGui::Text("%s", message.c_str());
+		message_mutex.unlock();
 
 		ImGui::End();
 

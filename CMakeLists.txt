@@ -22,10 +22,6 @@ include_directories(${asio_INCLUDE_DIRS})
 
 add_executable( Demo
                 src/main.cpp
-                src/opengl_shader.cpp
-                src/file_manager.cpp
-                src/opengl_shader.h
-                src/file_manager.h
                 src/student.h
                 src/student.cpp
                 src/json_writer.h
@@ -35,17 +31,9 @@ add_executable( Demo
                 bindings/imgui_impl_glfw.cpp
                 bindings/imgui_impl_opengl3.cpp
                 bindings/imgui_impl_glfw.h
-                bindings/imgui_impl_opengl3.h
-                assets/simple-shader.vs
-                assets/simple-shader.fs )
+                bindings/imgui_impl_opengl3.h)
 
 set_property(TARGET Demo PROPERTY CXX_STANDARD 17)
-
-add_custom_command(TARGET Demo
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/assets/simple-shader.vs ${PROJECT_BINARY_DIR}
-    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/assets/simple-shader.fs ${PROJECT_BINARY_DIR}
-)
 
 target_compile_definitions(Demo PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
 target_link_libraries(Demo imgui::imgui GLEW::glew_s glfw::glfw)

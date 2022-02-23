@@ -8,20 +8,21 @@
 #include <boost/asio/write.hpp>
 
 
-using boost::asio::ip::tcp;
+using namespace boost::asio;
 
-
+//Serves as the client
 class JsonWriter{
 private:
-	boost::asio::io_context io_context;
-    tcp::acceptor acceptor{io_context};
-	tcp::socket socket {io_context};
+    boost::system::error_code error;
 
+	boost::asio::io_context io_context;
+    ip::tcp::acceptor acceptor{io_context};
+	ip::tcp::socket socket {io_context};
 public:
     std::string message;
-    void accept_handler(const boost::system::error_code& error);
+    void connect_handler(const boost::system::error_code& error);
     void write_handler(const boost::system::error_code& error, std::size_t bytes_transferred);
-    void start(const unsigned short PORT);
+    void start(const std::string IPADDR, const unsigned short PORT);
     void close();
 };
 

@@ -5,36 +5,23 @@
 
 
 template <typename CompletionToken>
-auto async_write_message(tcp::socket& socket,
-    const char* message, CompletionToken&& token)
-  // The return type of the initiating function is deduced from the combination
-  // of CompletionToken type and the completion handler's signature. When the
-  // completion token is a simple callback, the return type is void. However,
-  // when the completion token is boost::asio::yield_context (used for stackful
-  // coroutines) the return type would be std::size_t, and when the completion
-  // token is boost::asio::use_future it would be std::future<std::size_t>.
-  //
-  // In C++14 we can omit the return type as it is automatically deduced from
-  // the return type of our underlying asynchronous operation
+auto async_write_message(ip::tcp::socket& socket,const char* message, CompletionToken&& token)
 {
-  // When delegating to the underlying operation we must take care to perfectly
-  // forward the completion token. This ensures that our operation works
-  // correctly with move-only function objects as callbacks, as well as other
-  // completion token types.
+
   return boost::asio::async_write(socket,
       boost::asio::buffer(message, std::strlen(message)),
       std::forward<CompletionToken>(token));
 }
 
-void JsonWriter::accept_handler(const boost::system::error_code& error){
+void JsonWriter::connect_handler(const boost::system::error_code& error){
     if (!error){
-        std::cout << "accepted socket\n";
+        std::cout << "Connected!\n";
 
         boost::asio::async_write(socket, boost::asio::buffer(message.c_str(), std::strlen(message.c_str())), [this](auto const& ec, auto size) { write_handler(ec,size); });
 
         std::cout << "wrote: " << message << "\n";
     }else{
-        std::cout << "failed accept\n";
+        std::cout << "failed to connect\n";
         std::cout << error.what();
     }
 }
@@ -43,7 +30,7 @@ void JsonWriter::write_handler(const boost::system::error_code& error, std::size
     if (!error){
         std::cout << "Message Sent: " << bytes_transferred <<"\n";
     }else{
-        std::cout << "failed accept\n";
+        std::cout << "failed to write\n";
         std::cout << error.what();
     }
 }
@@ -52,14 +39,9 @@ void JsonWriter::close(){
     socket.close();
 }
 
-void JsonWriter::start(const unsigned short PORT){
-    tcp::endpoint ep{tcp::v4(), PORT};
-    acceptor.open(ep.protocol());
-    acceptor.set_option(tcp::acceptor::reuse_address(true));
-    acceptor.bind(ep);
-    acceptor.listen();
-
-    acceptor.async_accept(socket, [this](auto const& ec) { accept_handler(ec); });
+void JsonWriter::start(const std::string IPADDR, const unsigned short PORT){
+    //connect to server
+    socket.async_connect(ip::tcp::endpoint(ip::make_address(IPADDR.c_str()),PORT), [this](auto const& ec) { connect_handler(ec); });
 
     io_context.run();
 }
