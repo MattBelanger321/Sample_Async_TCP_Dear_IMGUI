@@ -13,7 +13,6 @@ void JsonReader::read_line(){
 void JsonReader::accept_handler(const boost::system::error_code& error){
     if (!error){
         std::cout << "accepted connection!\n";
-        async_read_until(socket,boost::asio::dynamic_buffer(read,128), '\n',  [this](auto const& ec, auto size) { read_handler(ec,size); });
     }else{
         std::cout << "failed accept: ";
         std::cout << error.what() << "\n";
@@ -22,6 +21,7 @@ void JsonReader::accept_handler(const boost::system::error_code& error){
 
 void JsonReader::wait_handler(const boost::system::error_code& error){
     if(!error){
+        std::cout << "Wait Complete!\n";
         async_read_until(socket,boost::asio::dynamic_buffer(read,128), '\n',  [this](auto const& ec, auto size) { read_handler(ec,size); });
     }else{
         std::cout << "failed accept: ";

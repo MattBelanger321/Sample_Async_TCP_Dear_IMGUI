@@ -198,12 +198,15 @@ void startServer(GLFWwindow **window){
 	nlohmann::json json;
 	Student stud;
 
+	std::cout << "opening server\n";
+	
 	jr.start(55555);	//open server on this port
-	stud = fromJSON(nlohmann::json::parse(jr.read));
-	saveStudent(&stud);//this is guarenteed to run after GUI is rendered to screen
+
+	std::cout << "sevrer open";
 
 	while(!glfwWindowShouldClose(*window)){	//Server should close then window closes
 		jr.read_line();
+		stud = fromJSON(nlohmann::json::parse(jr.read));
 		saveStudent(&stud);
 	}
 
@@ -261,7 +264,7 @@ int main(){
 
 
 	}
-
+	read.join();
 
 	// Cleanup
 	ImGui_ImplOpenGL3_Shutdown();
