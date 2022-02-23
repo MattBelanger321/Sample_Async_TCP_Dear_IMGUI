@@ -10,6 +10,7 @@
 
 using boost::asio::ip::tcp;
 
+
 class JsonWriter{
 private:
 	boost::asio::io_context io_context;
