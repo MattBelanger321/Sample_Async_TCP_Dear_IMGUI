@@ -199,7 +199,6 @@ bool config(GLFWwindow **window){
 }
 
 
-
 int main(){
 	GLFWwindow *window;
 
@@ -252,9 +251,6 @@ int main(){
 
 
 	}
-	read.join();
-	server.close();
-
 	// Cleanup
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
@@ -262,5 +258,9 @@ int main(){
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
+
+	server.close();	//sets error flag in async calls
+	read.join();
+
 	return 0;
 }
