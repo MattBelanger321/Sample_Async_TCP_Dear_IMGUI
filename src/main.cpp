@@ -34,18 +34,9 @@
 std::string message;	//content sent from client to server to be printed on UI
 std::mutex message_mutex;	//protect message
 
+
 void toJSON(nlohmann::json* j, const Student* stud){
     *j = nlohmann::json{{"fname", stud->getFirstName()}, {"lname", stud->getLastName()}, {"grade", stud->getGrade()}, {"gpa", stud->getGpa()}};
-}
-
-Student fromJSON(const nlohmann::json json){
-	Student stud;
-	try{
-    	stud =  {json.at("grade"), json.at("gpa"), json.at("fname"), json.at("lname")};
-	}catch(std::exception e){
-		stud = NULL;
-	}
-    return stud;
 }
 
 const std::string jsonStudent(const Student* stud, nlohmann::json* json){
@@ -68,16 +59,6 @@ const char* getIP(std::string* ip){
 	readFile.close();
 
 	return ip->c_str();
-}
-
-Student readTCP(){
-	JsonReader jr;
-	nlohmann::json json;
-
-	jr.start(55555);
-
-	jr.close();
-	return fromJSON(nlohmann::json::parse(jr.read));
 }
 
 void sendTCP(const Student* stud){
@@ -103,6 +84,21 @@ void sendTCP(const char* message){
 	jw.close();
 }
 
+void saveStudent(const Student* stud){
+	const std::lock_guard<std::mutex> lock(message_mutex);
+	message = stud->getFirstName() + ", " + stud->getLastName() + ", " + std::to_string(stud->getGrade()) + ", " + std::to_string(stud->getGpa());
+}
+
+//server thread
+void startServer(GLFWwindow **window, JsonReader *jr){
+	nlohmann::json json;
+	Student stud;
+
+	std::cout << "opening server\n";
+	
+	std::cout << "sevrer open\n";
+	jr->start(55555);
+}
 
 //this function populates the pointer stud with content from the GUI fields or nothing if no content is available
 void getStudent(Student* stud){
@@ -111,12 +107,24 @@ void getStudent(Student* stud){
 	
 
 	char buf[128] = {0};
+	int i;
+	for(i = 0; i < strlen(stud->getFirstName().c_str()); i++){
+		buf[i] = stud->getFirstName()[i];
+	}
+	buf[i] = '\0';
+
 	if(ImGui::InputText("Enter First Name", buf, 128)){
 		std::string fname = buf;
 		stud->setFirstName(fname);
 	}
 
 	char buf2[128] = {0};
+
+	for(i = 0; i < strlen(stud->getLastName().c_str()); i++){
+		buf2[i] = stud->getLastName()[i];
+	}
+	buf2[i] = '\0';
+
 	if(ImGui::InputText("Enter Last Name", buf2, 128)){
 		std::string lname = buf2;
 		stud->setLastName(lname);
@@ -134,10 +142,7 @@ void getStudent(Student* stud){
 	
 }
 
-void saveStudent(const Student* stud){
-	const std::lock_guard<std::mutex> lock(message_mutex);
-	message = stud->getFirstName() + ", " + stud->getLastName() + ", " + std::to_string(stud->getGrade()) + ", " + std::to_string(stud->getGpa());
-}
+
 
 //Dear IMGUI Initalization
 bool config(GLFWwindow **window){
@@ -193,25 +198,7 @@ bool config(GLFWwindow **window){
 	return true;
 }
 
-void startServer(GLFWwindow **window){
-	JsonReader jr;
-	nlohmann::json json;
-	Student stud;
 
-	std::cout << "opening server\n";
-	
-	jr.start(55555);	//open server on this port
-
-	std::cout << "sevrer open";
-
-	while(!glfwWindowShouldClose(*window)){	//Server should close then window closes
-		jr.read_line();
-		stud = fromJSON(nlohmann::json::parse(jr.read));
-		saveStudent(&stud);
-	}
-
-	jr.close();
-}
 
 int main(){
 	GLFWwindow *window;
@@ -222,8 +209,9 @@ int main(){
 
 	Student senderStudent;	//student that will be sent
 	Student recieverStudent;	//student that will be recieved
-
-	std::thread read(startServer, &window);	//run server in background
+	boost::asio::io_context io;
+	JsonReader server(&message,&message_mutex,io);
+	std::thread read(startServer, &window, &server);	//run server in background
 
 	while(!glfwWindowShouldClose(window)){	//main app loop
 		
@@ -236,7 +224,7 @@ int main(){
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 	
-
+       
 		ImGui::Begin("Student Details");
 
 		getStudent(&senderStudent);	//populate student from GUI
@@ -265,6 +253,7 @@ int main(){
 
 	}
 	read.join();
+	server.close();
 
 	// Cleanup
 	ImGui_ImplOpenGL3_Shutdown();
