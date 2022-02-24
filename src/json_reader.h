@@ -15,21 +15,22 @@ using namespace boost::asio;
 //Serves as the server
 class JsonReader{
 private:
+    unsigned short port;
     boost::system::error_code error;
     boost::asio::io_context &io_context;
     ip::tcp::acceptor acceptor;
 	ip::tcp::socket socket;
 
-    std::string* message; //pointer to UI text
     std::mutex* mutex;  //pointer to UI message mutex
+    Student *stud;
 
 public:
     std::string read;
 
     //important:: io_context is passed by reference so all instanced of JsonReader have the same io_context
-    JsonReader(std::string *message, std::mutex *mutex, boost::asio::io_context& io): io_context(io),acceptor(io), socket(io){
-        this->message = message;
+    JsonReader(std::mutex *mutex, Student *stud, boost::asio::io_context& io): io_context(io),acceptor(io), socket(io){
         this->mutex = mutex;
+        this->stud = stud;
     }
 
     void accept_handler(const boost::system::error_code& error, JsonReader& jr);
@@ -38,8 +39,7 @@ public:
     void start(const unsigned short PORT);
     void close();
 
-    void saveStudent(const Student* stud);
-    Student fromJSON(const nlohmann::json json);
+    void fromJSON(const nlohmann::json json);
 };
 
 #endif

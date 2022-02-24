@@ -31,9 +31,6 @@
 #define PI 3.14159265358979323846
 #define PATH "ip.txt"
 
-std::string message;	//content sent from client to server to be printed on UI
-std::mutex message_mutex;	//protect message
-
 
 void toJSON(nlohmann::json* j, const Student* stud){
     *j = nlohmann::json{{"fname", stud->getFirstName()}, {"lname", stud->getLastName()}, {"grade", stud->getGrade()}, {"gpa", stud->getGpa()}};
@@ -84,11 +81,6 @@ void sendTCP(const char* message){
 	jw.close();
 }
 
-void saveStudent(const Student* stud){
-	const std::lock_guard<std::mutex> lock(message_mutex);
-	message = stud->getFirstName() + ", " + stud->getLastName() + ", " + std::to_string(stud->getGrade()) + ", " + std::to_string(stud->getGpa());
-}
-
 //server thread
 void startServer(GLFWwindow **window, JsonReader *jr){
 	nlohmann::json json;
@@ -101,7 +93,7 @@ void startServer(GLFWwindow **window, JsonReader *jr){
 }
 
 //this function populates the pointer stud with content from the GUI fields or nothing if no content is available
-void getStudent(Student* stud){
+void displayFields(Student* stud){
 	
 	ImGui::Text("Enter Student Details Below");
 	
@@ -206,10 +198,12 @@ int main(){
 		return 1;
 	}
 
-	Student senderStudent;	//student that will be sent
-	Student recieverStudent;	//student that will be recieved
+	Student student;	//student that will be sent
 	boost::asio::io_context io;
-	JsonReader server(&message,&message_mutex,io);
+
+	std::mutex student_mutex;	//protect message
+
+	JsonReader server(&student_mutex, &student, io);
 	std::thread read(startServer, &window, &server);	//run server in background
 
 	while(!glfwWindowShouldClose(window)){	//main app loop
@@ -226,17 +220,15 @@ int main(){
        
 		ImGui::Begin("Student Details");
 
-		getStudent(&senderStudent);	//populate student from GUI
+		displayFields(&student);	//populate student from GUI
 
+		student_mutex.lock();
 		if (ImGui::Button("Send")){
 			std::cout << "Sending..." << "\n";
-			sendTCP(&senderStudent);	//Send Student
+			sendTCP(&student);	//Send Student
 			std::cout << "Sent!" << "\n";
 		}
-
-		message_mutex.lock();
-		ImGui::Text("%s", message.c_str());
-		message_mutex.unlock();
+		student_mutex.unlock();
 
 		ImGui::End();
 

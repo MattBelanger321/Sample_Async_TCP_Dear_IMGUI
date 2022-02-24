@@ -10,8 +10,8 @@ void JsonReader::accept_handler(const boost::system::error_code& error, JsonRead
         std::cout << "accepted connection!\n";
         async_read_until(socket,boost::asio::dynamic_buffer(read,128), '\n',  [this, &jr](auto const& ec, auto size) { read_handler(ec,size, jr); });
 
-        JsonReader new_jr(message,mutex,io_context);
-        new_jr.start(55555);
+        JsonReader new_jr(mutex,stud,io_context); 
+        new_jr.start(port);
         new_jr.acceptor.async_accept(new_jr.socket, [this, &new_jr](auto const& ec){ accept_handler(ec, new_jr); }); 
     }else{
         std::cout << "failed accept: ";
@@ -20,26 +20,22 @@ void JsonReader::accept_handler(const boost::system::error_code& error, JsonRead
     }
 }
 
-void JsonReader::saveStudent(const Student* stud){
-	const std::lock_guard<std::mutex> lock(*mutex);
-	*message = stud->getFirstName() + ", " + stud->getLastName() + ", " + std::to_string(stud->getGrade()) + ", " + std::to_string(stud->getGpa());
-}
-
-Student JsonReader::fromJSON(const nlohmann::json json){
-	Student stud;
+void JsonReader::fromJSON(const nlohmann::json json){
+    const std::lock_guard<std::mutex> lock(*mutex);
 	try{
-    	stud =  {json.at("grade"), json.at("gpa"), json.at("fname"), json.at("lname")};
-	}catch(std::exception e){
+    	stud->setGrade(json.at("grade"));
+        stud->setGpa(json.at("gpa")); 
+        stud->setFirstName(json.at("fname"));
+        stud->setLastName(json.at("lname"));
+	}catch(std::exception ){
 		stud = NULL;
 	}
-    return stud;
 }
 
 void JsonReader::read_handler(const boost::system::error_code& error, std::size_t bytes_transferred, JsonReader& jr){
     if (!error){
         std::cout << "Read "<< bytes_transferred <<" bytes\n";
-        Student stud = fromJSON(nlohmann::json::parse(read));
-	    saveStudent(&stud);
+        fromJSON(nlohmann::json::parse(read));
         jr.socket.close();
         jr.acceptor.close();
     }else{
@@ -49,6 +45,7 @@ void JsonReader::read_handler(const boost::system::error_code& error, std::size_
 }
 
 void JsonReader::start(const unsigned short PORT){
+    port = PORT;
     ip::tcp::endpoint ep{ip::tcp::v4(), PORT};
     acceptor.open(ep.protocol());
     acceptor.set_option(ip::tcp::acceptor::reuse_address(true));
