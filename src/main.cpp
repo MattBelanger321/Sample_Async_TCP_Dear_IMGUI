@@ -83,10 +83,7 @@ void sendTCP(const char* message){
 }
 
 //server thread
-void startServer(GLFWwindow **window, JsonReader *jr){
-	nlohmann::json json;
-	Student stud;
-
+void startServer(JsonReader *jr){
 	std::cout << "opening server\n";
 	
 	std::cout << "sevrer open\n";
@@ -208,7 +205,7 @@ int main(){
 	std::mutex student_mutex;	//protect message
 
 	JsonReader server(&student_mutex, &student, io);
-	std::thread read(startServer, &window, &server);	//run server in background
+	std::thread read(startServer, &server);	//run server in background
 
 	while(!glfwWindowShouldClose(window)){	//main app loop
 		

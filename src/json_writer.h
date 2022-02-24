@@ -16,7 +16,6 @@ private:
     boost::system::error_code error;
 
 	boost::asio::io_context io_context;
-    ip::tcp::acceptor acceptor{io_context};
 	ip::tcp::socket socket {io_context};
 public:
     std::string message;

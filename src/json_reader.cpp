@@ -16,7 +16,6 @@ void JsonReader::accept_handler(const boost::system::error_code& error, JsonRead
     }else{
         std::cout << "failed accept: ";
         std::cout << error.what() << "\n";
-        std::exit(0);
     }
 }
 
