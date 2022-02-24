@@ -200,11 +200,10 @@ int main(){
 	}
 
 	Student student;	//student that will be sent
-	boost::asio::io_context io;
 
 	std::mutex student_mutex;	//protect message
 
-	JsonReader server(&student_mutex, &student, io);
+	JsonReader server(&student_mutex, &student, 55555);
 	std::thread read(startServer, &server);	//run server in background
 
 	while(!glfwWindowShouldClose(window)){	//main app loop

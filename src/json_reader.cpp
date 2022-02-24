@@ -5,14 +5,12 @@
 
 
 
-void JsonReader::accept_handler(const boost::system::error_code& error, JsonReader& jr){
+void JsonReader::accept_handler(const boost::system::error_code& error, ip::tcp::socket&& socket){
     if (!error){
         std::cout << "accepted connection!\n";
-        async_read_until(socket,boost::asio::dynamic_buffer(read,128), '\n',  [this, &jr](auto const& ec, auto size) { read_handler(ec,size, jr); });
+        async_read_until(socket,boost::asio::dynamic_buffer(read,128), '\n',  [this](auto const& ec, auto size) { read_handler(ec,size); });
 
-        JsonReader new_jr(mutex,stud,io_context); 
-        new_jr.start(port);
-        new_jr.acceptor.async_accept(new_jr.socket, [this, &new_jr](auto const& ec){ accept_handler(ec, new_jr); }); 
+        acceptor.async_accept(io_context, [this](auto const& ec, ip::tcp::socket socket){ accept_handler(ec, std::move(socket)); }); 
     }else{
         std::cout << "failed accept: ";
         std::cout << error.what() << "\n";
@@ -31,12 +29,11 @@ void JsonReader::fromJSON(const nlohmann::json json){
 	}
 }
 
-void JsonReader::read_handler(const boost::system::error_code& error, std::size_t bytes_transferred, JsonReader& jr){
+void JsonReader::read_handler(const boost::system::error_code& error, std::size_t bytes_transferred){
     if (!error){
         std::cout << "Read "<< bytes_transferred <<" bytes\n";
         fromJSON(nlohmann::json::parse(read));
-        jr.socket.close();
-        jr.acceptor.close();
+        socket.close();
     }else{
         std::cout << "failed read\n";
         std::cout << error.what();
@@ -44,15 +41,7 @@ void JsonReader::read_handler(const boost::system::error_code& error, std::size_
 }
 
 void JsonReader::start(const unsigned short PORT){
-    port = PORT;
-    ip::tcp::endpoint ep{ip::tcp::v4(), PORT};
-    acceptor.open(ep.protocol());
-    acceptor.set_option(ip::tcp::acceptor::reuse_address(true));
-    acceptor.bind(ep);
-    acceptor.listen();
-
-
-    acceptor.async_accept(socket, [this](auto const& ec) { accept_handler(ec,*this); });
+    acceptor.async_accept(io_context, [this](auto const& ec, auto socket) { accept_handler(ec, std::move(socket)); });
 
     io_context.run();
 }

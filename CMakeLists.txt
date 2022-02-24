@@ -34,7 +34,7 @@ add_executable( Demo
                 bindings/imgui_impl_opengl3.h
                 bindings/imgui_impl_glfw.h
                 bindings/imgui_impl_opengl3.h
-                bindings/imgui_impl_win32.h
+                   bindings/imgui_impl_win32.h
                 bindings/imgui_impl_win32.cpp
                 )
 

@@ -15,9 +15,9 @@ using namespace boost::asio;
 //Serves as the server
 class JsonReader{
 private:
-    unsigned short port;
+    const unsigned short PORT;
     boost::system::error_code error;
-    boost::asio::io_context &io_context;
+    boost::asio::io_context io_context;
     ip::tcp::acceptor acceptor;
 	ip::tcp::socket socket;
 
@@ -28,13 +28,19 @@ public:
     std::string read;
 
     //important:: io_context is passed by reference so all instanced of JsonReader have the same io_context
-    JsonReader(std::mutex *mutex, Student *stud, boost::asio::io_context& io): io_context(io),acceptor(io), socket(io){
+    JsonReader(std::mutex *mutex, Student *stud, const unsigned short port): PORT(port), acceptor(io_context), socket(io_context){
         this->mutex = mutex;
         this->stud = stud;
+
+        ip::tcp::endpoint ep{ip::tcp::v4(), PORT};
+        acceptor.open(ep.protocol());
+        acceptor.set_option(ip::tcp::acceptor::reuse_address(true));
+        acceptor.bind(ep);
+        acceptor.listen();
     }
 
-    void accept_handler(const boost::system::error_code& error, JsonReader& jr);
-    void read_handler(const boost::system::error_code& error, std::size_t bytes_transferred, JsonReader& jr);
+    void accept_handler(const boost::system::error_code& error, ip::tcp::socket&& socket);
+    void read_handler(const boost::system::error_code& error, std::size_t bytes_transferred);
 
     void start(const unsigned short PORT);
     void close();
