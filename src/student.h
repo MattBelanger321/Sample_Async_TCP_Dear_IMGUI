@@ -12,7 +12,7 @@ private:
     std::string f {""}; //fname
     std::string l {""}; //lname
 public:
-    Student(int grade = 0, double gpa = 0.0, std::string fname = "", std::string lname = ""): gr(grade), gp(gpa), f(fname), l(lname){};
+    Student(int grade = 0, float gpa = 0.0, std::string fname = "", std::string lname = ""): gr(grade), gp(gpa), f(fname), l(lname){};
     Student(const Student &stud): gr(stud.gr), gp(stud.gp), f(stud.f), l(stud.l){};
 
     int getGrade() const;
