@@ -11,7 +11,6 @@
 #include <imgui.h>
 #include "../build/bindings/imgui_impl_glfw.h"
 #include "../build/bindings/imgui_impl_opengl3.h"
-#include "../build/bindings/imgui_impl_win32.h"
 #include <boost/asio/io_context.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -182,8 +181,6 @@ bool config(GLFWwindow **window){
 		return false;
 	}
 
-	// DPI-related helpers (which run and compile without requiring 8.1 or 10, neither Windows version, neither associated SDK)
-	ImGui_ImplWin32_EnableDpiAwareness();
 
 	int screen_width, screen_height;
 	glfwGetFramebufferSize(*window, &screen_width, &screen_height);
