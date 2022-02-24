@@ -184,12 +184,6 @@ bool config(GLFWwindow **window){
 		return false;
 	}
 
-	// DPI-related helpers (which run and compile without requiring 8.1 or 10, neither Windows version, neither associated SDK)
-	void ImGui_ImplWin32_EnableDpiAwareness();
-	float ImGui_ImplWin32_GetDpiScaleForHwnd(void* hwnd);       // HWND hwnd
-	float ImGui_ImplWin32_GetDpiScaleForMonitor(void* monitor); // HMONITOR monitor
-	float ImGui_ImplWin32_GetDpiScaleForRect(int x1, int y1, int x2, int y2);
-
 	int screen_width, screen_height;
 	glfwGetFramebufferSize(*window, &screen_width, &screen_height);
 	glViewport(0, 0, screen_width, screen_height);

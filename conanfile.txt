@@ -24,3 +24,5 @@ lib, *.dylib* -> ./bin # Copies all dylib files from packages lib folder to my l
 ./res/bindings, imgui_impl_opengl3.cpp -> ./bindings
 ./res/bindings, imgui_impl_glfw.h -> ./bindings
 ./res/bindings, imgui_impl_opengl3.h -> ./bindings
+./res/bindings, imgui_impl_win32.cpp -> ./bindings
+./res/bindings, imgui_impl_win32.h -> ./bindings

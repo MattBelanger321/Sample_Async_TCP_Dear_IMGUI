@@ -31,7 +31,12 @@ add_executable( Demo
                 bindings/imgui_impl_glfw.cpp
                 bindings/imgui_impl_opengl3.cpp
                 bindings/imgui_impl_glfw.h
-                bindings/imgui_impl_opengl3.h)
+                bindings/imgui_impl_opengl3.h
+                bindings/imgui_impl_glfw.h
+                bindings/imgui_impl_opengl3.h
+                bindings/imgui_impl_win32.h
+                bindings/imgui_impl_win32.cpp
+                )
 
 set_property(TARGET Demo PROPERTY CXX_STANDARD 17)
 
